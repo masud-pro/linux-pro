@@ -162,3 +162,27 @@ if [ -d "project-name" ]; then
 else
     print_message "Project directory not found. Skipping project setup."
 fi
+
+# Install Laravel Valet Linux Plus
+if confirm_action "Do you want to install Laravel Valet Linux Plus?"; then
+    print_message "Installing Valet Linux Plus Dependencies"
+    sudo apt-get install -y curl libnss3-tools jq xsel openssl ca-certificates
+
+    print_message "Adding nginx stable repository"
+    sudo add-apt-repository -y ppa:nginx/stable
+    sudo apt-get update
+
+    print_message "Installing Valet Linux Plus via Composer"
+    composer global require genesisweb/valet-linux-plus
+
+    # Add Composer's global bin to PATH
+    export PATH="$PATH:$HOME/.config/composer/vendor/bin"
+    echo 'export PATH="$PATH:$HOME/.config/composer/vendor/bin"' >> ~/.bashrc
+
+    # Reload bash profile
+    source ~/.bashrc
+
+    print_message "Running valet install"
+    valet install
+    print_message "Laravel Valet Linux Plus Installed"
+fi
