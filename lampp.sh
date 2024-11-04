@@ -114,7 +114,6 @@ if ! command -v mysql &>/dev/null; then
     if confirm_action "MySQL is not installed. Do you want to install MySQL?"; then
         print_message "Installing MySQL"
         sudo apt install -y mysql-server
-        sudo mysql_secure_installation
         print_message "MySQL Installed"
     fi
 else
@@ -176,3 +175,5 @@ if [ -d "project-name" ]; then
 else
     print_message "Project directory not found. Skipping project setup."
 fi
+
+

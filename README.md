@@ -11,4 +11,9 @@ curl -sL https://raw.githubusercontent.com/masud-pro/linux-pro/refs/heads/main/v
 ```
 
 
+```bash
+curl -sL https://raw.githubusercontent.com/masud-pro/linux-pro/refs/heads/main/lampp.sh | bash
+```
+
+
 
