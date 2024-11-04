@@ -120,8 +120,6 @@ else
     print_message "MySQL is already installed, skipping."
 fi
 
-# Other installations...
-
 # Clone your Laravel project
 read -p "Enter your project repository URL (leave blank to skip): " repo_url
 if [ ! -z "$repo_url" ]; then
@@ -152,28 +150,15 @@ if [ -d "project-name" ]; then
         print_message ".env File Set Up"
     fi
 
-    # Set up MySQL Database
-    # Check MySQL version
-    if confirm_action "Do you want to check the MySQL version?"; then
-        mysql -V
-    fi
-
-    # Access MySQL shell as root
-    if confirm_action "Do you want to access MySQL as root?"; then
-        sudo mysql -p
-    fi
-
     # Custom User Creation and Privileges
     if confirm_action "Do you want to create a new MySQL user?"; then
         read -p "Enter MySQL username: " mysql_user
         read -sp "Enter MySQL password: " mysql_pass
         echo
-        create_mysql_user $mysql_user $mysql_passsudo apt-get purge apache2 -y; sudo apt autoremove -y; sudo apt-get install apache2; sudo apt-get install apache2; sudo apt-get purge libapache2-mod-php php;sudo apt-get install libapache2-mod-php php; sudo apt-get purge apache2; sudo apt-get install apache2; 
+        create_mysql_user $mysql_user $mysql_pass
     fi
 
     print_message "Setup Completed!"
 else
     print_message "Project directory not found. Skipping project setup."
 fi
-
-
