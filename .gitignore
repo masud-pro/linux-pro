@@ -1,4 +1,5 @@
 /.phpunit.cache
+/log
 /Log
 /.fleet
 /.idea
