@@ -13,79 +13,73 @@ confirm_action() {
     [[ -z "$response" || "$response" == "y" || "$response" == "yes" ]]
 }
 
-# Check if a package is installed and fetch version
-check_package() {
-    local package=$1
-    if command -v "$package" &>/dev/null; then
-        version=$("$package" --version 2>/dev/null || "$package" -v 2>/dev/null)
-        echo "$package is installed. Version: $version"
-        return 0
+# Source NVM from nvm.sh
+source_nvm() {
+    # Check if NVM is installed, if not, install it.
+    if [ -s "$HOME/.nvm/nvm.sh" ]; then
+        source "$HOME/.nvm/nvm.sh"
     else
-        echo "$package is not installed."
-        return 1
+        echo "NVM is not installed. Please run nvm.sh first."
+        exit 1
     fi
-}
-
-# Install NVM
-install_nvm() {
-    print_message "Installing NVM (Node Version Manager)"
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # Load NVM
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # Load NVM bash_completion
-    print_message "NVM Installed"
 }
 
 # Install Node.js using NVM
 install_node() {
     local version=$1
+    print_message "Installing Node.js version $version"
+    source_nvm
     if nvm install "$version"; then
-        print_message "Node.js version $version Installed"
+        print_message "Node.js version $version installed"
     else
         echo "Failed to install Node.js version $version"
         exit 1
     fi
 }
 
-# Install Yarn
-install_yarn() {
-    if confirm_action "Do you want to install Yarn?"; then
-        if npm install -g yarn; then
-            print_message "Yarn Installed"
-        else
-            echo "Failed to install Yarn"
-            exit 1
-        fi
+# Set active version for Node.js
+set_active_node_version() {
+    local version=$1
+    print_message "Setting Node.js version $version as active"
+    source_nvm
+    if nvm use "$version"; then
+        print_message "Node.js version $version is now active."
+    else
+        print_message "Node.js version $version is not installed. Installing..."
+        install_node "$version"
+        nvm use "$version"
     fi
 }
 
-# Uninstall a package completely
-uninstall_package() {
-    local package=$1
-    print_message "Uninstalling $package"
-    case $package in
-    nvm)
-        rm -rf "$HOME/.nvm"
-        sed -i '/nvm.sh/d' ~/.bashrc ~/.zshrc
-        sed -i '/NVM_DIR/d' ~/.bashrc ~/.zshrc
-        ;;
-    node)
-        nvm uninstall "$2" # Pass Node.js version if needed
-        ;;
-    yarn)
-        npm uninstall -g yarn
-        ;;
-    *)
-        echo "Unsupported package for uninstallation"
-        ;;
-    esac
-    print_message "$package and all related data removed."
+# Uninstall Node.js
+uninstall_node() {
+    local version=$1
+    print_message "Uninstalling Node.js version $version"
+    source_nvm
+    nvm uninstall "$version"
+    print_message "Node.js version $version removed."
+}
+
+# Fetch the last 5 major versions of Node.js
+fetch_last_5_major_versions() {
+    source_nvm
+    local major_versions
+    major_versions=$(nvm ls-remote --lts | grep 'Latest LTS' | tail -n 5)
+    
+    if [ -z "$major_versions" ]; then
+        echo "Could not fetch the last 5 major versions."
+        exit 1
+    fi
+
+    echo "$major_versions"
 }
 
 # Parse arguments
 FORCE=false
 RESET=false
 UNINSTALL=false
+USE=false
+USE_VERSION=""
 
 for arg in "$@"; do
     case $arg in
@@ -98,53 +92,50 @@ for arg in "$@"; do
     --uninstall)
         UNINSTALL=true
         ;;
+    --use)
+        USE=true
+        ;;
+    --use=*)
+        USE=true
+        USE_VERSION="${arg#*=}"
+        ;;
     esac
 done
 
-# Main logic
+# Main logic for Node.js
 if $RESET; then
-    uninstall_package nvm
-    uninstall_package yarn
-    install_nvm
-    if confirm_action "Do you want to install Node.js version 22 using NVM?"; then
-        install_node 22
-    fi
-    install_yarn
+    uninstall_node 22
+    install_node 22
 elif $UNINSTALL; then
-    uninstall_package nvm
-    uninstall_package yarn
-elif ! check_package nvm; then
-    if confirm_action "NVM (Node Version Manager) is not installed. Do you want to install NVM and Node.js?"; then
-        install_nvm
-        if confirm_action "Do you want to install Node.js version 22 using NVM?"; then
-            install_node 22
-        fi
-        install_yarn
-    fi
+    uninstall_node 22
 elif $FORCE; then
-    uninstall_package nvm
-    uninstall_package yarn
-    install_nvm
-    if confirm_action "Do you want to install Node.js version 22 using NVM?"; then
-        install_node 22
+    uninstall_node 22
+    install_node 22
+elif $USE; then
+    if [[ -n $USE_VERSION ]]; then
+        set_active_node_version "$USE_VERSION"
+    else
+        fetch_last_5_major_versions | while read -r version; do
+            echo "$version"
+        done
+        echo "Please select a version:"
+        read -r selected_version
+        set_active_node_version "$selected_version"
     fi
-    install_yarn
 else
-    print_message "NVM is already installed, skipping."
-
-    # Check Node.js version
+    # Source NVM and check for Node.js version 22
+    source_nvm
     if ! nvm list | grep -q 'v22\.'; then
         if confirm_action "Node.js version 22 is not installed. Do you want to install it?"; then
             install_node 22
         fi
     else
-        print_message "Node.js version 22 is already installed, skipping."
+        print_message "Node.js version 22 is already installed."
     fi
-
-    # Check Yarn
-    if ! check_package yarn; then
-        install_yarn
-    else
-        print_message "Yarn is already installed, skipping."
-    fi
+    
+    # Install the last 5 major versions
+    print_message "Installing the last 5 major versions of Node.js..."
+    fetch_last_5_major_versions | while read -r version; do
+        install_node "$version"
+    done
 fi

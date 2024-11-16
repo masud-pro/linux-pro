@@ -1,0 +1,51 @@
+Package Requirements and Bash Script Updates
+I want to update my bash script to handle package requirements and provide the following functionalities:
+
+1. Check for Package Existence and Version :
+Functionality:
+The script should verify if the package is already installed.
+If installed, display the current version and prompt the user to upgrade if an update is available.
+
+User Interaction:
+Accept yes or no as input, with Enter defaulting to yes.
+
+
+2. Handle Dependencies :
+Functionality:
+Before installing the package, check for required dependencies.
+Prompt the user to confirm the installation of dependencies.
+After successfully installing dependencies, proceed to install the package.
+
+User Interaction:
+Accept yes or no as input, with Enter defaulting to yes.
+
+3. Force Install Parameter (--force):
+Functionality:
+If the script is run with the --force parameter (e.g., ./package.sh --force), reinstall the package regardless of whether it is already installed.
+
+4. Reset Parameter (--reset) :
+Functionality:
+If the script is run with the --reset parameter, perform the following:
+Completely uninstall the package, including log files, cache files, and other associated data.
+Reinstall the package as a fresh installation.
+
+5. Uninstall Parameter (--uninstall) :
+Functionality:
+If the package is installed and the --uninstall parameter is provided, completely remove the package and clean all related files from the system.
+
+6. Use Version Parameter (--use) :
+Functionality:
+If the --use parameter is provided (e.g., ./package.sh --use):
+Display the last 5 available versions of the package.
+Check which of these versions are already installed on the system.
+Prompt the user to select a version to set as active.
+
+New Functionality:
+If the selected version is already installed, set it as active for the system.
+If the selected version is not installed, install it first, then set it as active.
+
+
+7. Set Default Version Parameter (--use XX.x)
+Functionality:
+If a specific version is provided with the --use parameter (e.g., ./package.sh --use 1.2.3):
+Set the specified version as the default version for the system.
