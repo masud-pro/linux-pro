@@ -70,6 +70,8 @@ if ! command -v composer &>/dev/null; then
         curl -sS https://getcomposer.org/installer | php
         mv composer.phar ~/.local/bin/composer
         export PATH="$HOME/.local/bin:$PATH"  # Make this change persistent later
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+        source ~/.bashrc
         print_message "Composer Installed"
     fi
 else
@@ -84,7 +86,7 @@ if ! command -v nvm &>/dev/null; then
         export NVM_DIR="$HOME/.nvm"
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # Load NVM
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # Load NVM bash_completion
-
+        source ~/.bashrc
         print_message "NVM Installed"
 
         # Install Node.js using NVM
